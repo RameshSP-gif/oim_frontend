@@ -20,11 +20,7 @@ function OrderList() {
 
   const role = localStorage.getItem("role");
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get("https://oim-backend-production.up.railway.app/orders", {
@@ -34,7 +30,11 @@ function OrderList() {
     } catch (err) {
       console.error("Failed to fetch orders:", err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleProcessOrder = async (id) => {
     try {
