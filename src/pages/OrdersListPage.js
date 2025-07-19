@@ -52,32 +52,35 @@ function OrderList() {
   };
 
   const handleSearchAndSort = useCallback(() => {
-    let results = [...orders];
+  let result = [...orders];
+  if (searchTerm) {
+    result = result.filter((order) =>
+      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
 
-    if (searchTerm) {
-      results = results.filter(
-        (o) =>
-          o.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          o.product_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+  if (sortField) {
+    result.sort((a, b) => {
+      if (sortField === 'order_date') {
+        return sortOrder === 'asc'
+          ? new Date(a[sortField]) - new Date(b[sortField])
+          : new Date(b[sortField]) - new Date(a[sortField]);
+      } else {
+        return sortOrder === 'asc'
+          ? a[sortField].localeCompare(b[sortField])
+          : b[sortField].localeCompare(a[sortField]);
+      }
+    });
+  }
 
-    if (sortConfig.key) {
-      results.sort((a, b) => {
-        const aVal = a[sortConfig.key];
-        const bVal = b[sortConfig.key];
-        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
+  setFilteredOrders(result);
+}, [orders, searchTerm, sortField, sortOrder]);
 
-    setFilteredOrders(results);
-  }, [orders, searchTerm, sortConfig]);
 
   useEffect(() => {
-    handleSearchAndSort();
-  }, [handleSearchAndSort]);
+  handleSearchAndSort();
+}, [handleSearchAndSort]); // ✅ no ESLint error
+
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
