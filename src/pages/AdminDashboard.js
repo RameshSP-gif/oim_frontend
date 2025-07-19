@@ -11,7 +11,7 @@ function AdminDashboard() {
     const fetchDashboardData = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get("http://localhost:5000/dashboard/kpis", {
+        const res = await axios.get("https://oim-backend-production.up.railway.app/dashboard/kpis", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);

@@ -25,7 +25,7 @@ function App() {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get("http://localhost:5000/auth/me", {
+        .get("https://oim-backend-production.up.railway.app/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {

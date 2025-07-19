@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 function Dashboard() {
   const [role, setRole] = useState(null);
@@ -15,7 +29,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get("http://localhost:5000/auth/me", {
+        .get("https://oim-backend-production.up.railway.app/auth/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -32,13 +46,70 @@ function Dashboard() {
 
   const fetchAdminData = async (token) => {
     try {
-      const res = await axios.get("http://localhost:5000/dashboard/kpis", {
+      const res = await axios.get("https://oim-backend-production.up.railway.app/dashboard/kpis", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setData(res.data);
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
     }
+  };
+
+  const renderCharts = () => {
+    const pieData = [
+      { name: "Completed Orders", value: data.totalOrders - data.pendingOrders },
+      { name: "Pending Orders", value: data.pendingOrders },
+    ];
+
+    const barData = [
+      {
+        name: "Sales Overview",
+        Sales: data.totalSales,
+        Orders: data.totalOrders,
+        Users: data.totalUsers,
+      },
+    ];
+
+    return (
+      <div className="row mt-4">
+        <div className="col-md-6">
+          <h5 className="text-center">Order Status</h5>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="col-md-6">
+          <h5 className="text-center">KPI Comparison</h5>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={barData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="Sales" fill="#8884d8" />
+              <Bar dataKey="Orders" fill="#82ca9d" />
+              <Bar dataKey="Users" fill="#ffc658" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
   };
 
   const renderContent = () => {
@@ -82,11 +153,13 @@ function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Charts */}
+          {renderCharts()}
         </>
       );
     }
 
-    // Content for other user roles
     return (
       <div>
         <h2 className="mb-4">Welcome, {user}</h2>
@@ -98,11 +171,7 @@ function Dashboard() {
     );
   };
 
-  return (
-    <div className="container mt-4">
-      {renderContent()}
-    </div>
-  );
+  return <div className="container mt-4">{renderContent()}</div>;
 }
 
 export default Dashboard;

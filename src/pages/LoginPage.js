@@ -16,7 +16,7 @@ function LoginPage({ setRole, setUser }) {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:5000/login", formData);
+      const res = await axios.post("https://oim-backend-production.up.railway.app/login", formData);
       const { token, user } = res.data;
       const { role, username } = user;
 

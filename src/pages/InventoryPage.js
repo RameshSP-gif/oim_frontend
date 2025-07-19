@@ -4,6 +4,7 @@ import axios from "axios";
 const InventoryPage = () => {
   const [inventory, setInventory] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [showOrders, setShowOrders] = useState(false);
   const [formData, setFormData] = useState({
     item_name: "",
     quantity: "",
@@ -12,10 +13,11 @@ const InventoryPage = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const branches = ["Main Branch", "City Branch", "Downtown Branch"];
+  const role = localStorage.getItem("role");
 
   const fetchInventory = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/inventory", {
+      const res = await axios.get("https://oim-backend-production.up.railway.app/inventory", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setInventory(res.data);
@@ -26,7 +28,7 @@ const InventoryPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/orders", {
+      const res = await axios.get("https://oim-backend-production.up.railway.app/orders", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setOrders(res.data);
@@ -51,8 +53,8 @@ const InventoryPage = () => {
 
     try {
       const endpoint = editingId
-        ? `http://localhost:5000/inventory/${editingId}`
-        : "http://localhost:5000/inventory";
+        ? `https://oim-backend-production.up.railway.app/inventory/${editingId}`
+        : "https://oim-backend-production.up.railway.app/inventory";
 
       const method = editingId ? axios.put : axios.post;
 
@@ -92,7 +94,7 @@ const InventoryPage = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/inventory/request",
+        "https://oim-backend-production.up.railway.app/inventory/request",
         {
           item_id: item.id,
           item_name: item.item_name,
@@ -118,7 +120,7 @@ const InventoryPage = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/inventory/${item.id}`,
+        `https://oim-backend-production.up.railway.app/inventory/${item.id}`,
         {
           ...item,
           quantity: item.quantity - parseInt(quantity),
@@ -139,7 +141,7 @@ const InventoryPage = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/inventory/transfer",
+        "https://oim-backend-production.up.railway.app/inventory/transfer",
         {
           item_id: item.id,
           item_name: item.item_name,
@@ -155,23 +157,27 @@ const InventoryPage = () => {
     }
   };
 
-  const handleUpdateStatus = async (id, status) => {
+  const handleProcessOrder = async (id) => {
     try {
       await axios.put(
-        `http://localhost:5000/orders/${id}`,
-        { status },
+        `https://oim-backend-production.up.railway.app/orders/${id}`,
+        { status: "Processed" },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      alert("Order updated");
+      alert("Order marked as processed.");
       fetchOrders();
     } catch (err) {
-      alert("Failed to update order");
+      alert("Failed to process order: " + err.message);
     }
+  };
+
+  const handleShowOrders = () => {
+    setShowOrders(true);
+    fetchOrders();
   };
 
   useEffect(() => {
     fetchInventory();
-    fetchOrders();
   }, []);
 
   return (
@@ -220,27 +226,54 @@ const InventoryPage = () => {
         </table>
       </div>
 
-      <h4 className="mt-5">📝 Orders</h4>
-      <div className="table-responsive">
-        <table className="table table-bordered table-striped">
-          <thead className="table-dark">
-            <tr>
-              <th>ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Transaction</th><th>Payment</th><th>Status</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id}</td><td>{order.customer_name}</td><td>{order.product_name}</td><td>{order.quantity}</td><td>₹{order.price}</td>
-                <td>{order.transaction_id}</td><td>{order.payment_method}</td><td>{order.status || "Pending"}</td>
-                <td>
-                  <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(order.id, "Processed")}>Mark Processed</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {role === "inventoryuser" && (
+        <>
+          <div className="text-end my-4">
+            <button className="btn btn-dark" onClick={handleShowOrders}>Show Order List</button>
+          </div>
+
+          {showOrders && (
+            <>
+              <h4 className="mt-4">📝 Orders</h4>
+              <div className="table-responsive">
+                <table className="table table-bordered table-striped">
+                  <thead className="table-dark">
+                    <tr>
+                      <th>ID</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Transaction</th><th>Payment</th><th>Status</th><th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order) => (
+                      <tr key={order.id}>
+                        <td>{order.id}</td>
+                        <td>{order.customer_name}</td>
+                        <td>{order.product_name}</td>
+                        <td>{order.quantity}</td>
+                        <td>₹{order.price}</td>
+                        <td>{order.transaction_id}</td>
+                        <td>{order.payment_method}</td>
+                        <td>{order.status || "Pending"}</td>
+                        <td>
+                          {order.status !== "Processed" ? (
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => handleProcessOrder(order.id)}
+                            >
+                              Process Order
+                            </button>
+                          ) : (
+                            <span className="badge bg-success">Processed</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 };

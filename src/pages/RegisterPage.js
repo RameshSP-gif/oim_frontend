@@ -12,7 +12,7 @@ function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/register", formData);
+      const res = await axios.post("https://oim-backend-production.up.railway.app/register", formData);
       alert(res.data.msg || "User registered successfully.");
     } catch (err) {
       alert("Registration failed.");

@@ -17,7 +17,7 @@ const AdminPage = () => {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/users", {
+      const res = await axios.get("https://oim-backend-production.up.railway.app/users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,7 +34,7 @@ const AdminPage = () => {
     if (!token) return alert("Not authenticated");
 
     try {
-      await axios.post("http://localhost:5000/users", form, {
+      await axios.post("https://oim-backend-production.up.railway.app/users", form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -51,7 +51,7 @@ const AdminPage = () => {
     if (!token) return alert("Not authenticated");
 
     try {
-      await axios.delete(`http://localhost:5000/users/${id}`, {
+      await axios.delete(`https://oim-backend-production.up.railway.app/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -67,7 +67,7 @@ const AdminPage = () => {
     if (!token) return alert("Not authenticated");
 
     try {
-      await axios.put(`http://localhost:5000/users/${id}`, form, {
+      await axios.put(`https://oim-backend-production.up.railway.app/users/${id}`, form, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

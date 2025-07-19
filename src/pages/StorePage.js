@@ -10,24 +10,24 @@ const StorePage = ({ user }) => {
   }, []);
 
   const fetchStores = async () => {
-    const res = await axios.get("http://localhost:5000/stores");
+    const res = await axios.get("https://oim-backend-production.up.railway.app/stores");
     setStores(res.data);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post("http://localhost:5000/stores", form);
+    await axios.post("https://oim-backend-production.up.railway.app/stores", form);
     setForm({ item: "", location: "", stockLevel: "" });
     fetchStores();
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:5000/stores/${id}`);
+    await axios.delete(`https://oim-backend-production.up.railway.app/stores/${id}`);
     fetchStores();
   };
 
   const handleUpdate = async (id) => {
-    await axios.put(`http://localhost:5000/stores/${id}`, form);
+    await axios.put(`https://oim-backend-production.up.railway.app/stores/${id}`, form);
     fetchStores();
   };
 

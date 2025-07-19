@@ -18,9 +18,38 @@ function OrderList() {
     transaction_id: "",
   });
 
+  const role = localStorage.getItem("role");
+
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("https://oim-backend-production.up.railway.app/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    }
+  };
+
+  const handleProcessOrder = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `https://oim-backend-production.up.railway.app/orders/${id}`,
+        { status: "Processed" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Order marked as Processed");
+      fetchOrders();
+    } catch (err) {
+      alert("Failed to process order: " + err.message);
+    }
+  };
 
   const handleSearchAndSort = useCallback(() => {
     let results = [...orders];
@@ -50,18 +79,6 @@ function OrderList() {
     handleSearchAndSort();
   }, [handleSearchAndSort]);
 
-  const fetchOrders = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(res.data);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    }
-  };
-
   const handleSort = (key) => {
     setSortConfig((prev) => ({
       key,
@@ -73,7 +90,7 @@ function OrderList() {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/orders/${id}`, {
+      await axios.delete(`https://oim-backend-production.up.railway.app/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();
@@ -109,12 +126,11 @@ function OrderList() {
   const handleUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:5000/orders/${editOrderId}`, {
-        ...formData,
-        transaction_id: formData.transaction_id,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.put(
+        `https://oim-backend-production.up.railway.app/orders/${editOrderId}`,
+        { ...formData },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       fetchOrders();
       cancelEdit();
     } catch (err) {
@@ -135,7 +151,9 @@ function OrderList() {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
         <h3>Order List</h3>
-        <Link to="/orders" className="btn btn-primary">Place New Order</Link>
+        <Link to="/orders" className="btn btn-primary">
+          Place New Order
+        </Link>
       </div>
 
       <div className="mb-3">
@@ -154,21 +172,11 @@ function OrderList() {
             <th onClick={() => handleSort("id")} style={{ cursor: "pointer" }}>
               ID {sortArrow("id")}
             </th>
-            <th onClick={() => handleSort("customer_name")} style={{ cursor: "pointer" }}>
-              Customer {sortArrow("customer_name")}
-            </th>
-            <th onClick={() => handleSort("product_name")} style={{ cursor: "pointer" }}>
-              Product {sortArrow("product_name")}
-            </th>
-            <th onClick={() => handleSort("quantity")} style={{ cursor: "pointer" }}>
-              Qty {sortArrow("quantity")}
-            </th>
-            <th onClick={() => handleSort("price")} style={{ cursor: "pointer" }}>
-              Price {sortArrow("price")}
-            </th>
-            <th onClick={() => handleSort("status")} style={{ cursor: "pointer" }}>
-              Status {sortArrow("status")}
-            </th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Status</th>
             <th>Transaction</th>
             <th>Actions</th>
           </tr>
@@ -176,7 +184,9 @@ function OrderList() {
         <tbody>
           {filteredOrders.length === 0 ? (
             <tr>
-              <td colSpan="8" className="text-center">No matching orders</td>
+              <td colSpan="8" className="text-center">
+                No matching orders
+              </td>
             </tr>
           ) : (
             filteredOrders.map((order) => (
@@ -229,11 +239,25 @@ function OrderList() {
                       </select>
                     </td>
                     <td>
-                      <input className="form-control" value={formData.transaction_id} disabled />
+                      <input
+                        className="form-control"
+                        value={formData.transaction_id}
+                        disabled
+                      />
                     </td>
                     <td>
-                      <button className="btn btn-success btn-sm me-2" onClick={handleUpdate}>Save</button>
-                      <button className="btn btn-secondary btn-sm" onClick={cancelEdit}>Cancel</button>
+                      <button
+                        className="btn btn-success btn-sm me-2"
+                        onClick={handleUpdate}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={cancelEdit}
+                      >
+                        Cancel
+                      </button>
                     </td>
                   </>
                 ) : (
@@ -241,12 +265,30 @@ function OrderList() {
                     <td>{order.customer_name}</td>
                     <td>{order.product_name}</td>
                     <td>{order.quantity}</td>
-                    <td>{order.price}</td>
+                    <td>₹{order.price}</td>
                     <td>{order.status}</td>
                     <td>{order.transaction_id}</td>
                     <td>
-                      <button className="btn btn-primary btn-sm me-2" onClick={() => startEdit(order)}>Edit</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(order.id)}>Delete</button>
+                      <button
+                        className="btn btn-primary btn-sm me-2"
+                        onClick={() => startEdit(order)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm me-2"
+                        onClick={() => handleDelete(order.id)}
+                      >
+                        Delete
+                      </button>
+                      {role === "inventoryuser" && (
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => handleProcessOrder(order.id)}
+                        >
+                          Process
+                        </button>
+                      )}
                     </td>
                   </>
                 )}

@@ -11,7 +11,7 @@ const OrderPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/inventory", {
+      const res = await axios.get("https://oim-backend-production.up.railway.app/inventory", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setProducts(res.data);
@@ -75,7 +75,7 @@ const OrderPage = () => {
           status: "Pending",
         };
 
-        await axios.post("http://localhost:5000/orders", orderData, {
+        await axios.post("https://oim-backend-production.up.railway.app/orders", orderData, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 
@@ -83,7 +83,7 @@ const OrderPage = () => {
         const newQty = stock.quantity - item.quantity;
 
         await axios.put(
-          `http://localhost:5000/inventory/${item.id}`,
+          `https://oim-backend-production.up.railway.app/inventory/${item.id}`,
           {
             store: stock.store,
             item_name: item.item_name,
