@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
@@ -22,23 +22,7 @@ function OrderList() {
     fetchOrders();
   }, []);
 
-  useEffect(() => {
-    handleSearchAndSort();
-  }, [orders, searchTerm, sortConfig]);
-
-  const fetchOrders = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(res.data);
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    }
-  };
-
-  const handleSearchAndSort = () => {
+  const handleSearchAndSort = useCallback(() => {
     let results = [...orders];
 
     if (searchTerm) {
@@ -60,6 +44,22 @@ function OrderList() {
     }
 
     setFilteredOrders(results);
+  }, [orders, searchTerm, sortConfig]);
+
+  useEffect(() => {
+    handleSearchAndSort();
+  }, [handleSearchAndSort]);
+
+  const fetchOrders = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    }
   };
 
   const handleSort = (key) => {
@@ -111,7 +111,7 @@ function OrderList() {
       const token = localStorage.getItem("token");
       await axios.put(`http://localhost:5000/orders/${editOrderId}`, {
         ...formData,
-        transaction_id: formData.transaction_id, // send it, even though it's not editable
+        transaction_id: formData.transaction_id,
       }, {
         headers: { Authorization: `Bearer ${token}` },
       });

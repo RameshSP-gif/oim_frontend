@@ -35,7 +35,7 @@ const Header = ({ toggleSidebar }) => {
             <img
               src={logo}
               alt="MCC Bank Logo"
-              style={{ height: "60px", marginRight: "10px" }}
+              style={{ height: "30px", marginRight: "5px" }}
             />
             <span className="fw-bold fs-5">MCC Bank System</span>
           </Link>
