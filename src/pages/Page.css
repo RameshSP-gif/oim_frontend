@@ -1,0 +1,76 @@
+.page-content {
+  padding: 20px;
+}
+
+.products {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.product-card {
+  background: white;
+  padding: 15px;
+  border: 1px solid #ccc;
+  width: 180px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.product-card img {
+  width: 100%;
+  height: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventory-table th, .inventory-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+/* src/pages/Page.css */
+.page-content {
+  padding: 20px;
+}
+
+.inventory-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.inventory-card {
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 200px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.inventory-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+input[type="number"] {
+  width: 60px;
+}

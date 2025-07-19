@@ -1,0 +1,30 @@
+.homepage-container {
+  background: linear-gradient(to right, #002f6c, #005baa);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+.homepage-content {
+  max-width: 600px;
+}
+
+.homepage-logo {
+  height: 100px;
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 30px;
+}
+
+.nav-links .btn {
+  font-size: 1rem;
+  padding: 10px 20px;
+  margin-top: 15px;
+}
