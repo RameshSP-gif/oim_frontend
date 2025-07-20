@@ -52,7 +52,7 @@ function App() {
         <div className="container-fluid">
           <Link className="navbar-brand fw-bold" to="/">    
           <Link className="navbar-brand fw-bold d-flex align-items-center" to="/">
-            <img src={logo} alt="MCC Logo" height="400" width="500" className="me-2"  />
+            <img src={logo} alt="MCC Logo" height="150" width="150" className="me-2"  />
                           Order & Inventory System
 </Link>
 </Link>
