@@ -18,69 +18,49 @@ function OrderList() {
     transaction_id: "",
   });
 
-  const role = localStorage.getItem("role");
-
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("https://oim-backend-production.up.railway.app/orders", {
+      const res = await axios.get("http://localhost:5000/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
-
-  const handleProcessOrder = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `https://oim-backend-production.up.railway.app/orders/${id}`,
-        { status: "Processed" },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Order marked as Processed");
-      fetchOrders();
-    } catch (err) {
-      alert("Failed to process order: " + err.message);
-    }
-  };
+  }, []);
 
   const handleSearchAndSort = useCallback(() => {
-  let result = [...orders];
-  if (searchTerm) {
-    result = result.filter((order) =>
-      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+    let results = [...orders];
 
-  if (sortField) {
-    result.sort((a, b) => {
-      if (sortField === 'order_date') {
-        return sortOrder === 'asc'
-          ? new Date(a[sortField]) - new Date(b[sortField])
-          : new Date(b[sortField]) - new Date(a[sortField]);
-      } else {
-        return sortOrder === 'asc'
-          ? a[sortField].localeCompare(b[sortField])
-          : b[sortField].localeCompare(a[sortField]);
-      }
-    });
-  }
+    if (searchTerm) {
+      results = results.filter(
+        (o) =>
+          o.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          o.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-  setFilteredOrders(result);
-}, [orders, searchTerm, sortField, sortOrder]);
+    if (sortConfig.key) {
+      results.sort((a, b) => {
+        const aVal = a[sortConfig.key];
+        const bVal = b[sortConfig.key];
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
 
+    setFilteredOrders(results);
+  }, [orders, searchTerm, sortConfig]);
 
   useEffect(() => {
-  handleSearchAndSort();
-}, [handleSearchAndSort]); // ✅ no ESLint error
-
+    handleSearchAndSort();
+  }, [handleSearchAndSort]); // ✅ FIXED dependency
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -93,7 +73,7 @@ function OrderList() {
     if (!window.confirm("Are you sure you want to delete this order?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`https://oim-backend-production.up.railway.app/orders/${id}`, {
+      await axios.delete(`http://localhost:5000/orders/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchOrders();
@@ -130,9 +110,14 @@ function OrderList() {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `https://oim-backend-production.up.railway.app/orders/${editOrderId}`,
-        { ...formData },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `http://localhost:5000/orders/${editOrderId}`,
+        {
+          ...formData,
+          transaction_id: formData.transaction_id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       fetchOrders();
       cancelEdit();
@@ -154,9 +139,7 @@ function OrderList() {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
         <h3>Order List</h3>
-        <Link to="/orders" className="btn btn-primary">
-          Place New Order
-        </Link>
+        <Link to="/orders" className="btn btn-primary">Place New Order</Link>
       </div>
 
       <div className="mb-3">
@@ -175,11 +158,21 @@ function OrderList() {
             <th onClick={() => handleSort("id")} style={{ cursor: "pointer" }}>
               ID {sortArrow("id")}
             </th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Status</th>
+            <th onClick={() => handleSort("customer_name")} style={{ cursor: "pointer" }}>
+              Customer {sortArrow("customer_name")}
+            </th>
+            <th onClick={() => handleSort("product_name")} style={{ cursor: "pointer" }}>
+              Product {sortArrow("product_name")}
+            </th>
+            <th onClick={() => handleSort("quantity")} style={{ cursor: "pointer" }}>
+              Qty {sortArrow("quantity")}
+            </th>
+            <th onClick={() => handleSort("price")} style={{ cursor: "pointer" }}>
+              Price {sortArrow("price")}
+            </th>
+            <th onClick={() => handleSort("status")} style={{ cursor: "pointer" }}>
+              Status {sortArrow("status")}
+            </th>
             <th>Transaction</th>
             <th>Actions</th>
           </tr>
@@ -187,9 +180,7 @@ function OrderList() {
         <tbody>
           {filteredOrders.length === 0 ? (
             <tr>
-              <td colSpan="8" className="text-center">
-                No matching orders
-              </td>
+              <td colSpan="8" className="text-center">No matching orders</td>
             </tr>
           ) : (
             filteredOrders.map((order) => (
@@ -242,25 +233,11 @@ function OrderList() {
                       </select>
                     </td>
                     <td>
-                      <input
-                        className="form-control"
-                        value={formData.transaction_id}
-                        disabled
-                      />
+                      <input className="form-control" value={formData.transaction_id} disabled />
                     </td>
                     <td>
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={handleUpdate}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={cancelEdit}
-                      >
-                        Cancel
-                      </button>
+                      <button className="btn btn-success btn-sm me-2" onClick={handleUpdate}>Save</button>
+                      <button className="btn btn-secondary btn-sm" onClick={cancelEdit}>Cancel</button>
                     </td>
                   </>
                 ) : (
@@ -268,30 +245,12 @@ function OrderList() {
                     <td>{order.customer_name}</td>
                     <td>{order.product_name}</td>
                     <td>{order.quantity}</td>
-                    <td>₹{order.price}</td>
+                    <td>{order.price}</td>
                     <td>{order.status}</td>
                     <td>{order.transaction_id}</td>
                     <td>
-                      <button
-                        className="btn btn-primary btn-sm me-2"
-                        onClick={() => startEdit(order)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm me-2"
-                        onClick={() => handleDelete(order.id)}
-                      >
-                        Delete
-                      </button>
-                      {role === "inventoryuser" && (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleProcessOrder(order.id)}
-                        >
-                          Process
-                        </button>
-                      )}
+                      <button className="btn btn-primary btn-sm me-2" onClick={() => startEdit(order)}>Edit</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(order.id)}>Delete</button>
                     </td>
                   </>
                 )}
