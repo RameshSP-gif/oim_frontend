@@ -60,7 +60,7 @@ function OrderList() {
 
   useEffect(() => {
     handleSearchAndSort();
-  }, [handleSearchAndSort]); // ✅ FIXED dependency
+  }, [handleSearchAndSort]); // ✅ No ESLint error now
 
   const handleSort = (key) => {
     setSortConfig((prev) => ({
@@ -111,10 +111,7 @@ function OrderList() {
       const token = localStorage.getItem("token");
       await axios.put(
         `http://localhost:5000/orders/${editOrderId}`,
-        {
-          ...formData,
-          transaction_id: formData.transaction_id,
-        },
+        formData,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -139,7 +136,9 @@ function OrderList() {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-3">
         <h3>Order List</h3>
-        <Link to="/orders" className="btn btn-primary">Place New Order</Link>
+        <Link to="/orders" className="btn btn-primary">
+          Place New Order
+        </Link>
       </div>
 
       <div className="mb-3">
